@@ -1,0 +1,112 @@
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+public class Server implements Runnable{
+	private int port;
+	private DatagramSocket socket;
+	private Thread run, manage, send, receive;
+	private boolean running = false;
+	private List<ServerClient> clients = new ArrayList<ServerClient>();
+	
+	public Server(int port){
+		this.port = port;
+		try {
+			this.socket = new DatagramSocket(port);
+		} catch (SocketException e) {
+			e.printStackTrace();
+			return;
+		}
+		run = new Thread(this, "Server");
+		run.start();
+		
+	}
+
+	@Override
+	public void run() {
+		running = true;
+		System.out.println("Server started on port: " + port);
+		ManageClients();
+		Receive();
+		
+	}
+	
+	private void ManageClients(){
+		this.manage = new Thread("Manage"){
+			public void run(){
+				while(running){
+					
+				}
+			}
+		};
+		manage.start();
+	}
+	
+	private void Receive(){
+		this.receive = new Thread("Receive"){
+			public void run(){
+				while(running){
+					byte[] data = new byte[1024];
+					DatagramPacket packet = new DatagramPacket(data, data.length);
+					try {
+						socket.receive(packet);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					String str = new String(packet.getData());
+					Process(packet);
+				}
+			}
+		};
+		receive.start();
+	}
+	
+	private void Process(DatagramPacket packet){
+		String str = new String(packet.getData());
+		if(str.startsWith("/c/")){
+			int id = UniqueIdentifier.GetIdentifier();
+			System.out.println("Identifier: " + id);
+			clients.add(new ServerClient(str.substring(3,str.length()), packet.getAddress(), packet.getPort(), id));
+			String ID = "/c/" + id;
+			Send(ID, packet.getAddress(), packet.getPort());
+		}
+		else if(str.startsWith("/m/")){
+			String msg = str.substring(3, str.length());
+			SendToAll(msg);
+		}
+		else{
+			
+		}
+	}
+	
+	private void SendToAll(String message){
+		for(int i = 0; i < clients.size(); i++){
+			ServerClient client = clients.get(i);
+			Send(message.getBytes(), client.address, client.port);
+		}
+	}
+	
+	private void Send(byte[] data, InetAddress address, int port){
+		send = new Thread("Send"){
+			public void run(){
+				DatagramPacket packet = new DatagramPacket(data, data.length, address, port);
+				try {
+					socket.send(packet);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		send.start();	
+	}
+	
+	private void Send(String msg, InetAddress address, int port){
+		msg += "/e/"; // marking the end of the message
+		Send(msg.getBytes(), address, port);
+	}
+}

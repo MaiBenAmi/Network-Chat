@@ -1,0 +1,55 @@
+import java.awt.BorderLayout;
+import java.awt.EventQueue;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+import java.awt.GridBagLayout;
+import javax.swing.JTextArea;
+import java.awt.GridBagConstraints;
+
+public class Client extends JFrame {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private JPanel contentPane;
+	private String name, ipAddress;
+	private int port;
+
+	/**
+	 * Create the frame.
+	 */
+	public Client(String name, String ipAddress, int port) {
+		setTitle("Mai's Chat");
+		this.name = name;
+		this.ipAddress = ipAddress;
+		this.port = port;
+		CreateWindow();
+	}
+	
+	private void CreateWindow(){
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setSize(880, 550);
+		setLocationRelativeTo(null);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		setContentPane(contentPane);
+		GridBagLayout gbl_contentPane = new GridBagLayout();
+		gbl_contentPane.columnWidths = new int[]{20, 855, 5};
+		gbl_contentPane.rowHeights = new int[]{30, 480, 40};
+		gbl_contentPane.columnWeights = new double[]{1.0, Double.MIN_VALUE};
+		gbl_contentPane.rowWeights = new double[]{1.0, Double.MIN_VALUE};
+		contentPane.setLayout(gbl_contentPane);
+		
+		JTextArea history_JTextArea = new JTextArea();
+		GridBagConstraints gbc_history_JTextArea = new GridBagConstraints();
+		gbc_history_JTextArea.fill = GridBagConstraints.BOTH;
+		gbc_history_JTextArea.gridx = 1;
+		gbc_history_JTextArea.gridy = 1;
+		contentPane.add(history_JTextArea, gbc_history_JTextArea);
+		setVisible(true);
+	}
+
+}

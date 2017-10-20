@@ -1,0 +1,39 @@
+import java.awt.BorderLayout;
+import java.awt.EventQueue;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+
+public class Client extends JFrame {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private JPanel contentPane;
+	private String name, ipAddress;
+	private int port;
+
+	/**
+	 * Create the frame.
+	 */
+	public Client(String name, String ipAddress, int port) {
+		this.name = name;
+		this.ipAddress = ipAddress;
+		this.port = port;
+		CreateWindow();
+	}
+	
+	private void CreateWindow(){
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setSize(750, 480);
+		setLocationRelativeTo(null);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setLayout(new BorderLayout(0, 0));
+		setContentPane(contentPane);
+		setVisible(true);
+	}
+
+}

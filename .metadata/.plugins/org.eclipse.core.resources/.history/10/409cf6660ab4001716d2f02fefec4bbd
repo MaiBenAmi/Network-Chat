@@ -1,0 +1,60 @@
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.SocketException;
+
+public class Server implements Runnable{
+	private int port;
+	private DatagramSocket socket;
+	private Thread run, manage, send, receive;
+	private boolean running = false;
+	
+	public Server(int port){
+		this.port = port;
+		try {
+			this.socket = new DatagramSocket(port);
+		} catch (SocketException e) {
+			e.printStackTrace();
+		}
+		run = new Thread(this, "Server");
+		
+	}
+
+	@Override
+	public void run() {
+		running = true;
+		ManageClients();
+		Receive();
+		
+	}
+	
+	private void ManageClients(){
+		this.manage = new Thread("Manage"){
+			public void run(){
+				while(running){
+					
+				}
+			}
+		};
+		manage.start();
+	}
+	
+	private void Receive(){
+		this.receive = new Thread("Receive"){
+			public void run(){
+				while(running){
+					byte[] data = new byte[1024];
+					DatagramPacket packet = new DatagramPacket(data, data.length);
+					try {
+						socket.receive(packet);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					String str = new String(packet.getData());
+					System.out.println(str);
+				}
+			}
+		};
+		receive.start();
+	}
+}

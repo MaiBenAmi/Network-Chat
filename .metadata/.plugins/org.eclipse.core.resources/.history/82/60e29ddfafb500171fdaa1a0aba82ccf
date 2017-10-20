@@ -1,0 +1,224 @@
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
+import javax.swing.text.DefaultCaret;
+import javax.swing.JMenuBar;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+
+public class ClientWindow extends JFrame implements Runnable{
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private JPanel contentPane;
+	private JTextField message_textfield;
+	private JTextArea history_JTextArea;
+	private DefaultCaret caret;
+	
+	private Client client;
+	
+	private Thread listen, run;
+	
+	private boolean running = false;
+	private JMenuBar menuBar;
+	private JMenu mnFile;
+	private JMenuItem mntmOnlineUsers;
+	private JMenuItem mntmExit;
+	
+	private OnlineUsers users;
+	
+	public ClientWindow(String name, String ipAddress, int port) {
+		setTitle("Mai's Chat");
+		this.client = new Client(name, ipAddress, port);
+		
+		boolean connectionStatus = client.OpenConnection(ipAddress);
+		if(!connectionStatus){
+			System.err.println("Connection failed");
+			Console("Connected failed");
+		}
+		CreateWindow();
+		users = new OnlineUsers();
+		String connection = "/c/" +name + "/e/";
+		running = true;
+		client.Send(connection.getBytes());		
+		run = new Thread(this,"Running");
+		run.start();
+		
+	}
+	
+	private void CreateWindow(){
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} 
+		catch (Exception e) {
+			e.printStackTrace();
+		} 
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setSize(880, 550);
+		setLocationRelativeTo(null);
+		
+		menuBar = new JMenuBar();
+		setJMenuBar(menuBar);
+		
+		mnFile = new JMenu("File");
+		menuBar.add(mnFile);
+		
+		mntmExit = new JMenuItem("Exit");
+		mnFile.add(mntmExit);
+		
+		mntmOnlineUsers = new JMenuItem("Online Users");
+		mntmOnlineUsers.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				users.setVisible(true);
+			}
+		});
+		mnFile.add(mntmOnlineUsers);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		setContentPane(contentPane);
+		GridBagLayout gbl_contentPane = new GridBagLayout();
+		gbl_contentPane.columnWidths = new int[]{28, 815, 30, 7};
+		gbl_contentPane.rowHeights = new int[]{25, 485, 40};
+		contentPane.setLayout(gbl_contentPane);
+		
+		history_JTextArea = new JTextArea();
+		history_JTextArea.setEditable(false);
+		GridBagConstraints gbc_history_JTextArea = new GridBagConstraints();
+		gbc_history_JTextArea.insets = new Insets(10, 5, 0, 0);
+		gbc_history_JTextArea.fill = GridBagConstraints.BOTH;
+		gbc_history_JTextArea.gridx = 0;
+		gbc_history_JTextArea.gridy = 1;
+		gbc_history_JTextArea.gridwidth = 3;
+		gbc_history_JTextArea.gridheight = 2;
+		gbc_history_JTextArea.weightx = 1;
+		gbc_history_JTextArea.weighty = 1;
+		caret = (DefaultCaret) history_JTextArea.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+		JScrollPane scroll = new JScrollPane(history_JTextArea);
+		GridBagConstraints scrollConstraints = new GridBagConstraints();
+		scrollConstraints.insets = new Insets(0, 0, 5, 5);
+		scrollConstraints.fill = GridBagConstraints.BOTH;
+		scrollConstraints.gridx = 0;
+		scrollConstraints.gridy = 0;
+		scrollConstraints.gridwidth = 3;
+		scrollConstraints.gridheight = 2;
+		scrollConstraints.weightx = 1;
+		scrollConstraints.weighty = 1;
+		scrollConstraints.insets = new Insets(0, 5, 0, 0);
+		contentPane.add(scroll, scrollConstraints);
+		
+		message_textfield = new JTextField();
+		message_textfield.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if(e.getKeyCode() == KeyEvent.VK_ENTER){ // If the pressed key is 'Enter'
+					Send(message_textfield.getText(), true);
+				}
+			}
+		});
+		GridBagConstraints gbc_message_textfield = new GridBagConstraints();
+		gbc_message_textfield.insets = new Insets(0, 0, 0, 5);
+		gbc_message_textfield.fill = GridBagConstraints.HORIZONTAL;
+		gbc_message_textfield.gridx = 0;
+		gbc_message_textfield.gridy = 2;
+		gbc_message_textfield.gridwidth = 2;
+		gbc_message_textfield.weightx = 1;
+		gbc_message_textfield.weighty = 0;
+		contentPane.add(message_textfield, gbc_message_textfield);
+		message_textfield.setColumns(10);
+		
+		JButton send_button = new JButton("Send");
+		send_button.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				Send(message_textfield.getText(), true);
+			}
+		});
+		GridBagConstraints gbc_send_button = new GridBagConstraints();
+		gbc_send_button.insets = new Insets(0, 0, 0, 5);
+		gbc_send_button.gridx = 2;
+		gbc_send_button.gridy = 2;
+		gbc_send_button.weightx = 0;
+		gbc_send_button.weighty = 0;
+		contentPane.add(send_button, gbc_send_button);
+		
+		
+		message_textfield.requestFocusInWindow();
+		
+		addWindowListener(new WindowAdapter(){
+			public void windowClosing(WindowEvent e){
+				String disconnect = "/d/" + client.GetID() + "/e/";
+				Send(disconnect, false);
+				client.Close();
+				running = false;
+			}
+		});
+		
+		setVisible(true);
+	}
+	
+	public void Console(String msg){
+		history_JTextArea.append(msg + "\n");
+	}
+	
+	private void Send(String msg, boolean text){
+		if(msg.equals(""))
+			return;
+		if(text){
+			msg = client.GetName() + ": " + msg;
+			msg = "/m/" + msg;
+			message_textfield.setText("");
+		}
+		client.Send(msg.getBytes());		
+	}
+	
+	public void Listen(){
+		listen = new Thread("Listen"){
+					public void run(){
+						while(running){
+							String message = client.Receive();
+							if(message.startsWith("/c/")){
+								//client.SetID(Integer.parseInt(message.substring(3, message.length())));
+								client.SetID(Integer.parseInt(message.split("/c/|/e/")[1]));
+								Console("Successfully connected to server! ID: " + client.GetID());
+							}
+							else if(message.startsWith("/m/")){
+								String text = message.substring(3);
+								text = text.split("/e/")[0];
+								Console(text);
+							}
+							else if(message.startsWith("/i/")){
+								String text = "/i/" + client.GetID() + "/e/";
+								Send(text, false);
+							}
+							else if(message.startsWith("/u/")){
+								String[] u = message.split("/u/|/n/|/e/");
+								users.Update(u);
+							}
+						}	
+					}
+		};
+		listen.start();
+	}
+
+	@Override
+	public void run() {
+		Listen();		
+	}
+}

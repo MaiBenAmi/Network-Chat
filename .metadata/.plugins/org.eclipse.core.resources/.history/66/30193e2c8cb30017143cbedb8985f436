@@ -1,0 +1,85 @@
+import java.awt.BorderLayout;
+import java.awt.EventQueue;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+import java.awt.GridBagLayout;
+import javax.swing.JTextArea;
+import javax.swing.UIManager;
+
+import java.awt.GridBagConstraints;
+import javax.swing.JButton;
+import java.awt.Insets;
+import javax.swing.JTextField;
+
+public class Client extends JFrame {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private JPanel contentPane;
+	private String name, ipAddress;
+	private int port;
+	private JTextField message_textfield;
+
+	/**
+	 * Create the frame.
+	 */
+	public Client(String name, String ipAddress, int port) {
+		setTitle("Mai's Chat");
+		this.name = name;
+		this.ipAddress = ipAddress;
+		this.port = port;
+		CreateWindow();
+	}
+	
+	private void CreateWindow(){
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} 
+		catch (Exception e) {
+			e.printStackTrace();
+		} 
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setSize(880, 550);
+		setLocationRelativeTo(null);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		setContentPane(contentPane);
+		GridBagLayout gbl_contentPane = new GridBagLayout();
+		gbl_contentPane.columnWidths = new int[]{28, 815, 30, 7};
+		gbl_contentPane.rowHeights = new int[]{35, 475, 40};
+		gbl_contentPane.columnWeights = new double[]{1.0, 1.0};
+		gbl_contentPane.rowWeights = new double[]{1.0, Double.MIN_VALUE};
+		contentPane.setLayout(gbl_contentPane);
+		
+		JTextArea history_JTextArea = new JTextArea();
+		GridBagConstraints gbc_history_JTextArea = new GridBagConstraints();
+		gbc_history_JTextArea.insets = new Insets(0, 0, 5, 5);
+		gbc_history_JTextArea.fill = GridBagConstraints.BOTH;
+		gbc_history_JTextArea.gridx = 1;
+		gbc_history_JTextArea.gridy = 1;
+		gbc_history_JTextArea.gridwidth = 2;
+		contentPane.add(history_JTextArea, gbc_history_JTextArea);
+		
+		message_textfield = new JTextField();
+		GridBagConstraints gbc_message_textfield = new GridBagConstraints();
+		gbc_message_textfield.insets = new Insets(0, 0, 0, 5);
+		gbc_message_textfield.fill = GridBagConstraints.HORIZONTAL;
+		gbc_message_textfield.gridx = 1;
+		gbc_message_textfield.gridy = 2;
+		contentPane.add(message_textfield, gbc_message_textfield);
+		message_textfield.setColumns(10);
+		
+		JButton send_button = new JButton("Send");
+		GridBagConstraints gbc_send_button = new GridBagConstraints();
+		gbc_send_button.insets = new Insets(0, 0, 0, 5);
+		gbc_send_button.gridx = 2;
+		gbc_send_button.gridy = 2;
+		contentPane.add(send_button, gbc_send_button);
+		setVisible(true);
+	}
+
+}

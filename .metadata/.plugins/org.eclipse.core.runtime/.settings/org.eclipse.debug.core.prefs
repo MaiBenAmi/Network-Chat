@@ -1,0 +1,2 @@
+eclipse.preferences.version=1
+prefWatchExpressions=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?>\r\n<watchExpressions>\r\n<expression enabled\="true" text\="new String(data.getData())"/>\r\n<expression enabled\="true" text\="c.getID()"/>\r\n<expression enabled\="true" text\="c.address.toString()"/>\r\n<expression enabled\="true" text\="clients.get(clients.size() - 1).name"/>\r\n<expression enabled\="true" text\="clients.size()"/>\r\n<expression enabled\="true" text\="clients.get(clients.size() - 1).name"/>\r\n</watchExpressions>\r\n

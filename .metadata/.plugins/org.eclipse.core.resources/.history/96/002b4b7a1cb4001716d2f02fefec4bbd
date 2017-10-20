@@ -1,0 +1,79 @@
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+public class Server implements Runnable{
+	private int port;
+	private DatagramSocket socket;
+	private Thread run, manage, send, receive;
+	private boolean running = false;
+	private List<ServerClient> clients = new ArrayList<ServerClient>();
+	
+	public Server(int port){
+		this.port = port;
+		try {
+			this.socket = new DatagramSocket(port);
+		} catch (SocketException e) {
+			e.printStackTrace();
+			return;
+		}
+		run = new Thread(this, "Server");
+		run.start();
+		
+	}
+
+	@Override
+	public void run() {
+		running = true;
+		System.out.println("Server started on port: " + port);
+		ManageClients();
+		Receive();
+		
+	}
+	
+	private void ManageClients(){
+		this.manage = new Thread("Manage"){
+			public void run(){
+				while(running){
+					
+				}
+			}
+		};
+		manage.start();
+	}
+	
+	private void Receive(){
+		this.receive = new Thread("Receive"){
+			public void run(){
+				while(running){
+					byte[] data = new byte[1024];
+					DatagramPacket packet = new DatagramPacket(data, data.length);
+					try {
+						socket.receive(packet);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					String str = new String(packet.getData());
+					Process(packet);
+					System.out.println(str);
+				}
+			}
+		};
+		receive.start();
+	}
+	
+	private void Process(DatagramPacket packet){
+		String str = new String(packet.getData());
+		if(str.startsWith("/c/")){
+			int id = UniqueIdentifier.GetIdentifier();
+			clients.add(new ServerClient(str.substring(3,str.length()), packet.getAddress(), packet.getPort(), id));
+		}
+		else{
+			
+		}
+	}
+}
